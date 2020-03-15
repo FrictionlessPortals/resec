@@ -5,3 +5,5 @@ authors = ["FrictionlessPortals <8077147+FrictionlessPortals@users.noreply.githu
 edition = "2018"
 
 [dependencies]
+reqwest = "0.10"
+thiserror = "1.0"
