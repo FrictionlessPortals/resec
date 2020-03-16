@@ -8,6 +8,9 @@ mod consts;
 pub mod error;
 pub mod parser;
 pub mod stages;
+pub mod schema {
+    pub mod metadata;
+}
 
 /// Convenience re-export of commonly used items.
 ///
@@ -22,6 +25,7 @@ pub mod prelude {
         consts::{EXAM_PAPER_YEARS, MARKING_SCHEME_YEARS},
         error::SecError,
         parser::*,
+        schema::metadata::{Examination, Language, Level, Type},
         stages::StageBuilder,
     };
 }
