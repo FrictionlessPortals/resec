@@ -4,7 +4,7 @@
 //! from simple syntax.
 
 use proc_macro::TokenStream;
-use std::{fs::File, collections::BTreeMap};
+use std::{fs, collections::BTreeMap};
 use quote::{quote, format_ident};
 use syn::{parse_macro_input, LitStr};
 use proc_macro2::TokenStream as TokenStream2;
@@ -16,8 +16,8 @@ pub fn make_schema(input: TokenStream) -> TokenStream {
     let input: LitStr = parse_macro_input!(input);
 
     // Load the schema file.
-    let file = File::open(input.value()).unwrap();
-    let map: BTreeMap<u32, String> = serde_json::from_reader(file).unwrap();
+    let contents = fs::read_to_string(input.value()).unwrap();
+    let map: BTreeMap<u32, String> = serde_json::from_str(&contents).unwrap();
 
     // Compile the regex to reduce function runtime.
     let regex = Regex::new("[^0-9a-zA-Z]+").unwrap();
