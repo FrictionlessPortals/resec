@@ -17,6 +17,7 @@ use reqwest::Client;
 use std::collections::HashMap;
 
 /// Main stage builder.
+#[derive(Default)]
 pub struct StageBuilder {
     query_form: HashMap<&'static str, String>,
 }
@@ -24,9 +25,7 @@ pub struct StageBuilder {
 impl StageBuilder {
     /// Create a new stage builder.
     pub fn new() -> Self {
-        Self {
-            query_form: HashMap::new(),
-        }
+        Self::default()
     }
 
     /// Set terms and conditions checkbox.

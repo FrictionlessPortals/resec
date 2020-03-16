@@ -23,7 +23,6 @@ pub async fn parse_types() -> SecResult<HashMap<String, String>> {
     // Find the table containing the paper types.
     let items: Vec<Node> = document
         .find(Attr("name", "MaterialArchive__noTable__sbv__ViewType"))
-        .into_iter()
         .collect();
 
     // Grab the options.
@@ -72,7 +71,6 @@ pub async fn parse_years(type_id: &str) -> SecResult<Vec<u32>> {
     // Find the table containing the paper types.
     let items: Vec<Node> = document
         .find(Attr("name", "MaterialArchive__noTable__sbv__YearSelect"))
-        .into_iter()
         .collect();
 
     // Grab the options.
@@ -125,7 +123,6 @@ pub async fn parse_exams(type_id: &str, year: u32) -> SecResult<HashMap<String, 
             "name",
             "MaterialArchive__noTable__sbv__ExaminationSelect",
         ))
-        .into_iter()
         .collect();
 
     // Grab the options.
@@ -180,7 +177,6 @@ pub async fn parse_subjects(
     // Find the table containing the paper types.
     let items: Vec<Node> = document
         .find(Attr("name", "MaterialArchive__noTable__sbv__SubjectSelect"))
-        .into_iter()
         .collect();
 
     // Grab the options.
