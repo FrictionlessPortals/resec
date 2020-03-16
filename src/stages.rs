@@ -55,7 +55,7 @@ impl StageBuilder {
         self
     }
 
-    // Set year.
+    /// Set year.
     pub fn year(mut self, year: u32) -> Self {
         // YearSelect Flag
         self.query_form.insert(
@@ -71,7 +71,7 @@ impl StageBuilder {
         self
     }
 
-    // Set examination.
+    /// Set examination.
     pub fn examination(mut self, id: &str) -> Self {
         // ExaminationSelect Flag
         self.query_form.insert(
@@ -87,7 +87,7 @@ impl StageBuilder {
         self
     }
 
-    // Set subject.
+    /// Set subject.
     pub fn subject(mut self, id: u32) -> Self {
         // SubjectSelect Flag
         self.query_form.insert(
@@ -103,7 +103,7 @@ impl StageBuilder {
         self
     }
 
-    // Finish building the stage and query using built object.
+    /// Finish building the stage and query using built object.
     pub async fn query(&self) -> SecResult<String> {
         // Prepare the reqwest client.
         let client = Client::new();
