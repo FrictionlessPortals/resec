@@ -19,4 +19,6 @@ pub enum SecError {
     ParseInt(#[from] num::ParseIntError),
     #[error("Failed to retrieve {0} value")]
     Value(&'static str),
+    #[error("Query returned no material")]
+    NoMaterial,
 }

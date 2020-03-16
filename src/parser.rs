@@ -2,13 +2,14 @@
 //! data from the website.
 
 use crate::{
+    consts::EXAM_URL,
     error::{SecError, SecResult},
     stages::StageBuilder,
 };
 use select::{
     document::Document,
     node::Node,
-    predicate::{Attr, Name},
+    predicate::{Attr, Class, Name},
 };
 use std::collections::HashMap;
 
@@ -203,12 +204,94 @@ pub async fn parse_subjects(
                 map.insert(value, item.text());
             }
 
-            println!("map: {:?}", map);
-
             // Return the map.
             Ok(map)
         }
         None => Err(SecError::Value("could not get subject field")),
+    }
+}
+
+/// Scrape exam papers from the generated HTML.
+pub async fn parse_papers(
+    type_id: &str,
+    year: u32,
+    exam_id: &str,
+    subject: u32,
+) -> SecResult<Vec<(String, String)>> {
+    // Fetch the stage two HTML.
+    let html = StageBuilder::new()
+        .agree_flag(true)
+        .paper_type(type_id)
+        .year(year)
+        .examination(exam_id)
+        .subject(subject)
+        .query()
+        .await?;
+
+    // Parse the HTML into objects.
+    let document = Document::from(html.as_str());
+
+    // Generate the inner contents of each document block.
+    let contents: Vec<String> = document
+        .find(Class("materialbody"))
+        .map(|node| filter_node(node))
+        .collect();
+
+    // Check if there is material.
+    if contents.is_empty() {
+        // Return a query failure.
+        Err(SecError::NoMaterial)
+    } else {
+        // Return the parsed material.
+        Ok(contents
+            .as_slice()
+            .chunks(2)
+            .map(|chunk| {
+                // Split chunk into name and link.
+                (
+                    chunk
+                        .get(0)
+                        .expect("could not get material value 0")
+                        .to_owned(),
+                    chunk
+                        .get(1)
+                        .expect("could not get material value 1")
+                        .to_owned(),
+                )
+            })
+            .collect())
+    }
+}
+
+/// Filter the material body.
+///
+/// This function produces either the raw query name
+/// for the material or the download link for the material.
+fn filter_node(node: Node) -> String {
+    // Check if the node contains "Click Here".
+    if !node.text().trim().contains("Click Here") {
+        node.text().trim().to_string()
+    } else {
+        // Loop through and filter by hyperlink.
+        for x in node.children().filter(|x| x.name() == Some("a")) {
+            // Check if it contains a link.
+            if x.attr("href").is_some() {
+                let x = match x.attr("href") {
+                    Some(x) => x,
+                    None => return String::new(),
+                };
+
+                // If the link contains the EXAM_URL, return the string.
+                if x.contains("https://www.examinations.ie") {
+                    return x.to_string();
+                } else {
+                    return format!("{}/{}", EXAM_URL, x.to_string());
+                }
+            }
+        }
+
+        // If all other branches fail.
+        String::new()
     }
 }
 
