@@ -16,120 +16,99 @@ use crate::{consts::EXAM_URL, error::SecResult};
 use reqwest::Client;
 use std::collections::HashMap;
 
-/// Main stages enum.
-///
-/// Allows the user to query different stages easily.
-pub enum Stage {
-    One(bool),
-    Two(String),
-    Three(String, i32),
-    Four(String, i32, String),
-    Five(String, i32, String, String),
+/// Main stage builder.
+pub struct StageBuilder {
+    query_form: HashMap<&'static str, String>,
 }
 
-impl Stage {
-    /// Fetch the HTML for a given stage.
-    pub async fn fetch_stage(&self) -> SecResult<String> {
+impl StageBuilder {
+    /// Create a new stage builder.
+    pub fn new() -> Self {
+        Self {
+            query_form: HashMap::new(),
+        }
+    }
+
+    /// Set terms and conditions checkbox.
+    pub fn agree_flag(mut self, flag: bool) -> Self {
+        // Check the given flag.
+        if flag {
+            // Agree to the terms and conditions.
+            self.query_form
+                .insert("MaterialArchive__noTable__cbv__AgreeCheck", "Y".to_string());
+            self.query_form
+                .insert("MaterialArchive__noTable__cbh__AgreeCheck", "N".to_string());
+        }
+
+        // Return the changed object.
+        self
+    }
+
+    /// Set paper type.
+    pub fn paper_type(mut self, id: &str) -> Self {
+        // ViewType Flag
+        self.query_form
+            .insert("MaterialArchive__noTable__sbv__ViewType", id.into());
+        self.query_form
+            .insert("MaterialArchive__noTable__sbh__ViewType", "id".to_string());
+
+        // Return the changed object.
+        self
+    }
+
+    // Set year.
+    pub fn year(mut self, year: u32) -> Self {
+        // YearSelect Flag
+        self.query_form.insert(
+            "MaterialArchive__noTable__sbv__YearSelect",
+            year.to_string(),
+        );
+        self.query_form.insert(
+            "MaterialArchive__noTable__sbh__YearSelect",
+            "id".to_string(),
+        );
+
+        // Return the changed object.
+        self
+    }
+
+    // Set examination.
+    pub fn examination(mut self, id: &str) -> Self {
+        // ExaminationSelect Flag
+        self.query_form.insert(
+            "MaterialArchive__noTable__sbv__ExaminationSelect",
+            id.into(),
+        );
+        self.query_form.insert(
+            "MaterialArchive__noTable__sbh__ExaminationSelect",
+            "id".to_string(),
+        );
+
+        // Return the changed object.
+        self
+    }
+
+    // Set subject.
+    pub fn subject(mut self, id: u32) -> Self {
+        // SubjectSelect Flag
+        self.query_form
+            .insert("MaterialArchive__noTable__sbv__SubjectSelect", id.to_string());
+        self.query_form.insert(
+            "MaterialArchive__noTable__sbh__SubjectSelect",
+            "id".to_string(),
+        );
+
+        // Return the changed object.
+        self
+    }
+
+    // Finish building the stage and query using built object.
+    pub async fn query(&self) -> SecResult<String> {
         // Prepare the reqwest client.
         let client = Client::new();
 
-        // Generate the stage form body.
-        let mut form_layout = HashMap::new();
-
-        // Match the given stage.
-        match self {
-            Stage::One(a) => {
-                // Checkbox Agree Flag
-                if *a {
-                    // Allow the form to proceed to the second stage.
-                    form_layout
-                        .insert("MaterialArchive__noTable__cbv__AgreeCheck", "Y".to_string());
-                    form_layout
-                        .insert("MaterialArchive__noTable__cbh__AgreeCheck", "N".to_string());
-                }
-            }
-            Stage::Two(t) => {
-                // Checkbox Agree Flag
-                form_layout.insert("MaterialArchive__noTable__cbv__AgreeCheck", "Y".to_string());
-                form_layout.insert("MaterialArchive__noTable__cbh__AgreeCheck", "N".to_string());
-
-                // ViewType Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__ViewType", t.into());
-                form_layout.insert("MaterialArchive__noTable__sbh__ViewType", "id".to_string());
-            }
-            Stage::Three(t, y) => {
-                // Checkbox Agree Flag
-                form_layout.insert("MaterialArchive__noTable__cbv__AgreeCheck", "Y".to_string());
-                form_layout.insert("MaterialArchive__noTable__cbh__AgreeCheck", "N".to_string());
-
-                // ViewType Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__ViewType", t.into());
-                form_layout.insert("MaterialArchive__noTable__sbh__ViewType", "id".to_string());
-
-                // YearSelect Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__YearSelect", y.to_string());
-                form_layout.insert(
-                    "MaterialArchive__noTable__sbh__YearSelect",
-                    "id".to_string(),
-                );
-            }
-            Stage::Four(t, y, e) => {
-                // Checkbox Agree Flag
-                form_layout.insert("MaterialArchive__noTable__cbv__AgreeCheck", "Y".to_string());
-                form_layout.insert("MaterialArchive__noTable__cbh__AgreeCheck", "N".to_string());
-
-                // ViewType Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__ViewType", t.into());
-                form_layout.insert("MaterialArchive__noTable__sbh__ViewType", "id".to_string());
-
-                // YearSelect Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__YearSelect", y.to_string());
-                form_layout.insert(
-                    "MaterialArchive__noTable__sbh__YearSelect",
-                    "id".to_string(),
-                );
-
-                // ExaminationSelect Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__ExaminationSelect", e.into());
-                form_layout.insert(
-                    "MaterialArchive__noTable__sbh__ExaminationSelect",
-                    "id".to_string(),
-                );
-            }
-            Stage::Five(t, y, e, s) => {
-                // Checkbox Agree Flag
-                form_layout.insert("MaterialArchive__noTable__cbv__AgreeCheck", "Y".to_string());
-                form_layout.insert("MaterialArchive__noTable__cbh__AgreeCheck", "N".to_string());
-
-                // ViewType Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__ViewType", t.into());
-                form_layout.insert("MaterialArchive__noTable__sbh__ViewType", "id".to_string());
-
-                // YearSelect Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__YearSelect", y.to_string());
-                form_layout.insert(
-                    "MaterialArchive__noTable__sbh__YearSelect",
-                    "id".to_string(),
-                );
-
-                // ExaminationSelect Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__ExaminationSelect", e.into());
-                form_layout.insert(
-                    "MaterialArchive__noTable__sbh__ExaminationSelect",
-                    "id".to_string(),
-                );
-
-                // SubjectSelect Flag
-                form_layout.insert("MaterialArchive__noTable__sbv__SubjectSelect", s.into());
-                form_layout.insert(
-                    "MaterialArchive__noTable__sbh__SubjectSelect",
-                    "id".to_string(),
-                );
-            }
-        }
-
         // Post the details using the generated form body.
-        let response = client.post(EXAM_URL).form(&form_layout).send().await?;
+        let response = client.post(EXAM_URL).form(&self.query_form).send().await?;
         Ok(response.text().await?)
     }
 }
@@ -143,7 +122,7 @@ mod stages_tests {
     #[tokio::test]
     async fn stage_one() -> SecResult<()> {
         // Attempt to get HTML.
-        let html = Stage::One(true).fetch_stage().await?;
+        let html = StageBuilder::new().agree_flag(false).query().await?;
 
         // Open up a file and write the html.
         let mut file = File::create("stage_one.html")?;
@@ -155,7 +134,11 @@ mod stages_tests {
     #[tokio::test]
     async fn stage_two() -> SecResult<()> {
         // Attempt to get HTML.
-        let html = Stage::Two("exampapers".into()).fetch_stage().await?;
+        let html = StageBuilder::new()
+            .agree_flag(true)
+            .paper_type("exampapers")
+            .query()
+            .await?;
 
         // Open up a file and write the html.
         let mut file = File::create("stage_two.html")?;
@@ -167,8 +150,11 @@ mod stages_tests {
     #[tokio::test]
     async fn stage_three() -> SecResult<()> {
         // Attempt to get HTML.
-        let html = Stage::Three("exampapers".into(), 2019)
-            .fetch_stage()
+        let html = StageBuilder::new()
+            .agree_flag(true)
+            .paper_type("exampapers")
+            .year(2019)
+            .query()
             .await?;
 
         // Open up a file and write the html.
@@ -181,8 +167,12 @@ mod stages_tests {
     #[tokio::test]
     async fn stage_four() -> SecResult<()> {
         // Attempt to get HTML.
-        let html = Stage::Four("exampapers".into(), 2019, "lc".into())
-            .fetch_stage()
+        let html = StageBuilder::new()
+            .agree_flag(true)
+            .paper_type("exampapers")
+            .year(2019)
+            .examination("lc")
+            .query()
             .await?;
 
         // Open up a file and write the html.
@@ -195,8 +185,13 @@ mod stages_tests {
     #[tokio::test]
     async fn stage_five() -> SecResult<()> {
         // Attempt to get HTML.
-        let html = Stage::Five("exampapers".into(), 2019, "lc".into(), 1.to_string())
-            .fetch_stage()
+        let html = StageBuilder::new()
+            .agree_flag(true)
+            .paper_type("exampapers")
+            .year(2019)
+            .examination("lc")
+            .subject(1)
+            .query()
             .await?;
 
         // Open up a file and write the html.
