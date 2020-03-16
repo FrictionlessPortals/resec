@@ -4,6 +4,6 @@
 //!
 //! **Note**: This library can stop working at any time if a website change occurs!
 
+pub mod consts;
 pub mod error;
 pub mod stages;
-pub mod consts;
