@@ -6,4 +6,5 @@
 
 pub mod consts;
 pub mod error;
+pub mod parser;
 pub mod stages;
