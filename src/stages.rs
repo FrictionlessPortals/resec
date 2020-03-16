@@ -91,8 +91,10 @@ impl StageBuilder {
     // Set subject.
     pub fn subject(mut self, id: u32) -> Self {
         // SubjectSelect Flag
-        self.query_form
-            .insert("MaterialArchive__noTable__sbv__SubjectSelect", id.to_string());
+        self.query_form.insert(
+            "MaterialArchive__noTable__sbv__SubjectSelect",
+            id.to_string(),
+        );
         self.query_form.insert(
             "MaterialArchive__noTable__sbh__SubjectSelect",
             "id".to_string(),
